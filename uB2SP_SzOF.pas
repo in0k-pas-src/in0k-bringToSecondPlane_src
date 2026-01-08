@@ -44,6 +44,7 @@ type tListFT2F=array of TCustomForm;
 
 function  SzOF_listFT2F_make(const form:TCustomForm):tListFT2F;                  {$ifOPT D-}inline;{$endIf}
 procedure SzOF_listFT2F_zFIX(const fTop,form:TCustomForm; const list:tListFT2F); {$ifOPT D-}inline;{$endIf}
+procedure SzOF_listFT2F_zFIX(const fTop,form:TCustomForm);                       {$ifOPT D-}inline;{$endIf}
 procedure SzOF_listFT2F_free(var list:tListFT2F);                                {$ifOPT D-}inline;{$endIf}
 
 implementation
@@ -114,6 +115,13 @@ uses LCLVersion;
     {$endIf}
 {$endIf}
 
+// 4.4.x.x
+{$if (lcl_major=4)and(lcl_minor=4)}
+    {$if (lcl_release=0)or(lcl_patch=0)}
+        {$define FSzOL_implementation_verified}
+    {$endIf}
+{$endIf}
+
 {$ifNdef FSzOL_implementation_verified} // сообщим что в этой версии я Не тестил
 {$warning ---------------------------------------------------------------------}
 {$warning    Screen.MoveFormToZFront NOT verified in this version LCL.         }
@@ -130,21 +138,32 @@ begin {$ifOPT D+}
       Assert(Assigned(form),'`form`: must be defined');
       Assert(Screen.CustomFormZIndex(form)>1,'`form`: wrong place, must be BELOW second plane');
       {$endIf}
+    result:=nil;
     SetLength(result, Screen.CustomFormZIndex(form)-1);
     for i:=1 to Screen.CustomFormZIndex(form)-1 do begin
         result[i-1]:=Screen.CustomFormsZOrdered[i];
     end;
 end;
 
+//------------------------------------------------------------------------------
+
+procedure SzOF_listFT2F_zFIX(const fTop,form:TCustomForm);
+begin {$ifOPT D+}
+      Assert(Assigned(fTop),'`fTop`: must be defined ');
+      Assert(SzOW_form_is_TOP_inZOrder(fTop),'`fTop`: must be TOP form of the application');
+      Assert(Assigned(form),'`form`: must be defined');
+      {$endIf}
+    Screen.MoveFormToZFront(form);
+    Screen.MoveFormToZFront(fTop);
+end;
+
 // Исправить порядок следования форм в `zIndex-списка` окон приложения
+// а вот интересно, чего я так сложно делать стал .. гм .. вопросс
 procedure SzOF_listFT2F_zFIX(const fTop,form:TCustomForm; const list:tListFT2F);
 var i:integer;
 begin {$ifOPT D+}
       Assert(Assigned(list),'`list`: must be defined');
       Assert(Length(list)>0,'`list`: the number of elements must be greater than zero');
-      Assert(Assigned(fTop),'`fTop`: must be defined ');
-      Assert(SzOW_form_is_TOP_inZOrder(fTop),'`fTop`: must be TOP form of the application');
-      Assert(Assigned(form),'`form`: must be defined');
       {$endIf}
     for i:= Length(list)-1 downto 0 do begin
         {$ifOPT D+}
@@ -153,9 +172,10 @@ begin {$ifOPT D+}
         {$endIf}
         Screen.MoveFormToZFront(list[i]);
     end;
-    Screen.MoveFormToZFront(form);
-    Screen.MoveFormToZFront(fTop);
+    SzOF_listFT2F_zFIX(fTop,form);
 end;
+
+//------------------------------------------------------------------------------
 
 // уничтожить список
 procedure SzOF_listFT2F_free(var list:tListFT2F);

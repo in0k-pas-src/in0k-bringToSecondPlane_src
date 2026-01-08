@@ -1,9 +1,6 @@
 unit uBringToSecond;
-//-------------------------------------------------------------[ in0k (c) 2018 ]
-//
-// Перемещение "Окна" (tForm) на ВТОРОЙ план
-//
-//--- Схема работы функции на примере ------------------------------------------
+
+//--- Схема работы функции на примере ------------------------ [ in0k (c) 2018 ]
 //
 //     Z-Index
 //
@@ -31,12 +28,18 @@ unit uBringToSecond;
     {$define b2sp_implementation_WIN}{$define b2sp_implementation_selected}
   {$endIF}
 {$endIF}
-//--- #1. по ЦЕЛЕВЫМ виджитам
+//--- #1.1 по ЦЕЛЕВЫМ виджитам
+{$ifNdef b2sp_implementation_selected} // видимо нативно через ВИДЖИТЫ
+  {$if DEFINED(LCLcocoa)}
+    {$define b2sp_implementation_cocoa}{$define b2sp_implementation_selected}
+  {$endIF}
+{$endIF}
+//--- #1.2 по ЦЕЛЕВЫМ виджитам
 {$ifNdef b2sp_implementation_selected} // видимо нативно через ВИДЖИТЫ
   {$if DEFINED(LCLqt) or DEFINED(LCLqt5)}
-    {$define b2sp_implementation_QtX}{$define b2sp_implementation_SET}
+    {$define b2sp_implementation_QtX}{$define b2sp_implementation_selected}
   {$elseIf DEFINED(LCLgtk2) or DEFINED(LCLgtk3)}
-    {$define b2sp_implementation_GtkX}{$define b2sp_implementation_SET}
+    {$define b2sp_implementation_GtkX}{$define b2sp_implementation_selected}
   {$endIF}
 {$endIF}
 {%endRegion -------------------------------------------------------------}
@@ -48,7 +51,10 @@ interface
 
 uses
   Forms,
-  {$if     defined(b2sp_implementation_WIN) } uBringToSecond_WIN
+  {$if     defined(b2sp_implementation_WIN) }
+    uBringToSecond_WIN
+  {$elseif defined(b2sp_implementation_cocoa) }
+    uBringToSecond_cocoa
   {$elseif defined(b2sp_implementation_QtX) }
       // теперь надо определить, можно ли использовать X11 НАПРЯМУЮ
       {$if DEFINED(LCLqt5)}
@@ -106,7 +112,7 @@ uses
       {$else}
          uBringToSecond_GtkX
       {$endif}
-  {$else}{шансов НЕТ .. вариант по умолчанию} bringToSecond_LCL
+  {$else}{шансов НЕТ .. вариант по умолчанию}  uBringToSecond_LCLv2
     {$note --------------------------------------------------------------------}
     {$note  in0k-bringToSecondPlane: The basic cross-platform version is used. }
     {$note  Can work slowly and with flicker.                                  }
@@ -115,10 +121,11 @@ uses
 
 {$ifOpt D+}
 const cBringToSecondUNIT=
-{$if     defined(b2sp_implementation_WIN) } 'uBringToSecond_WIN'
-{$elseif defined(b2sp_implementation_X11) } 'uBringToSecond_X11'
-{$elseif defined(b2sp_implementation_QtX) } 'uBringToSecond_QtX'
-{$elseif defined(b2sp_implementation_GtkX)} 'uBringToSecond_GtkX'
+{$if     defined(b2sp_implementation_WIN) }  'uBringToSecond_WIN'
+{$elseif defined(b2sp_implementation_X11) }  'uBringToSecond_X11'
+{$elseif defined(b2sp_implementation_QtX) }  'uBringToSecond_QtX'
+{$elseif defined(b2sp_implementation_GtkX)}  'uBringToSecond_GtkX'
+{$elseif defined(b2sp_implementation_cocoa)} 'uBringToSecond_cocoa'
 {$else}'uBringToSecond_LCL'{$endIF};
 {$endIF}
 
@@ -136,8 +143,10 @@ begin {$ifOPT D+} Assert(Assigned(form),'`form`: must be defined'); {$endIf}
     uBringToSecond_QtX.bringToSecond(form);
   {$elseif defined(b2sp_implementation_GtkX)}
     uBringToSecond_GtkX.bringToSecond(form);
+  {$elseif defined(b2sp_implementation_cocoa)}
+    uBringToSecond_cocoa.bringToSecond(form);
   {$else}
-    uBringToSecond_LCL.bringToSecond(form);
+    uBringToSecond_LCLv2.bringToSecond(form);
   {$endIF}
 end;
 
