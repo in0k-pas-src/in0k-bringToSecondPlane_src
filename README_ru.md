@@ -13,47 +13,51 @@ in0k-bringToSecondPlane
 
       Z-Index
 
-      T0P   Wnd00              +-> Wnd_A                        Wnd_A
-       1    Wnd01              |   Wnd00                  +---> Wnd_B
-       2     ...               |   Wnd01                  |     Wnd00
-       3     ...               |    ...                   |     Wnd01
-      ...    ...               |    ...                   |
-       N    Wnd_A.bringToFront-^    ...                   |
-       M     ...                   bringToSecond(Wnd_B)---^
-      ...    ...                    ...
-      ...............................................................
-      DeskTop DeskTop DeskTop DeskTop DeskTop DeskTop DeskTop DeskTop
+      T0P   Wnd00                 +--> Wnd_A                      Wnd_A
+       1    Wnd01                 |    Wnd00                 +--> Wnd_B
+       2     ...                  |    Wnd01                 |    Wnd00
+       3     ...                  |     ...                  |    Wnd01
+      ...    ...                  |     ...                  |
+       N    bringToSecond(Wnd_A)--^     ...                  |
+       M     ...                       bringToSecond(Wnd_B)--^
+      ...    ...                        ...
+      .................................................................
+      DeskTop DeskTop DeskTop  DeskTop DeskTop  DeskTop DeskTop DeskTop
 
 
 
 Состав
 ------
 
-* `bringToSecond.pas` **обобщенный** вариант.
+* `uBringToSecond.pas` **обобщенный** вариант.
    По возможности использует **нативную** реализацию для целевой платформы.
    Если реализации нет, то кроссплатформенный вариант.
-* `bringToSecond_LCL.pas` кроссплатформенный вариант
+* `uBringToSecond_LCL.pas` кроссплатформенный вариант
    * Функционал процедуры `bringToSecond` достигается двумя
      последовательными вызовами стандартного метода `tForm.bringToFront`.
    * :shit: периодически заметно характерное мерцание интерфейса.
      :+1:   должно работать на ВСЕХ платформах
-* `bringToSecond_WIN.pas`  используются функции **WinAPI**
-* `bringToSecond_X11.pas`  используются функции **xlib**
-* `bringToSecond_GtkX.pas` используются методы  **Gtk**
-* `bringToSecond_QtX.pas`  используются методы  **Qt**
+* `uBringToSecond_WIN.pas`  используются функции **WinAPI**
+* `uBringToSecond_X11.pas`  используются функции **xlib**
+* `uBringToSecond_GtkX.pas` используются методы  **Gtk**
+* `uBringToSecond_QtX.pas`  используются методы  **Qt***
+* `uBringToSecond_cocoa.pas`  используются методы  **NSWindow**
 
+
+ ::include{file=chapter1.md}
 
 
 Таблица совместимости
 ---------------------
 
-   |              |win32/64|x11/xlib|  GTK2  |  GTK3  |   Qt4  |   Qt5  |
-   |:-------------|:------:|:------:|:------:|:------:|:------:|:------:|
-   | `.._LCL.pas` |  [::]  |  [::]  |  [::]  |  [::]  |  [::]  |  [::]  |
-   | `.._WIN.pas` |  [+]   |        |  [+]   |        |  [#]   |  [+]   |
-   | `.._X11.pas` |        |        |  [+]   |        |  [+]   |  [+]   |
-   | `.._GtkX.pas`|  [~1]  |        |  [+]   |  [+]   |        |        |
-   | `.._QtX.pas` |  [~2]  |        |        |        |  [~3]  |  [~3]  |
+   |              |win32/64|x11/xlib|  GTK2  |  GTK3  |   Qt4  |   Qt5  | cocoa  |
+   |:-------------|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
+   | `.._LCL.pas` |  [::]  |  [::]  |  [::]  |  [::]  |  [::]  |  [::]  |  [::]  |
+   | `.._WIN.pas` |  [+]   |        |  [+]   |        |  [#]   |  [+]   |        |
+   | `.._X11.pas` |        |        |  [+]   |        |  [+]   |  [+]   |        |
+   | `.._GtkX.pas`|  [~1]  |        |  [+]   |  [+]   |        |        |        |
+   | `.._QtX.pas` |  [~2]  |        |        |        |  [~3]  |  [~3]  |        |
+   | `..cocoa.pas`|        |        |        |        |        |        |  [+]   |
 
 - `[::]` - должно работать ВЕЗДЕ, где присутствует Lazarus
 - `[+] ` - реализовано, тестировано
